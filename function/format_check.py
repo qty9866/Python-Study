@@ -9,15 +9,30 @@ from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 
 # 首页日期格式检测
 def check_date_format(doc):
+    first_page_text = get_first_page_text(doc)
+
+    if is_chinese_date_format(first_page_text):
+        print("The date format on the first page is correct.")
+    else:
+        print("The date format on the first page is incorrect.")
+
+def is_chinese_date_format(text):
     pattern = r'[〇一二三四五六七八九零]{4}年[〇一二三四五六七八九十]{1,2}月'
-    first_page = ''
-    for par in doc.paragraphs:
-        first_page += par.text + '\n'
-        if 'PAGE_BREAK' in par.text:
+    match = re.search(pattern, text)
+    return bool(match)
+
+def get_first_page_text(doc):
+    """
+    获取文档第一页的所有文本内容.
+    """
+    first_page_text = ''
+    for paragraph in doc.paragraphs:
+        first_page_text += paragraph.text + '\n'
+        # 假设文档是简单结构，遇到换页符后停止
+        if 'PAGE_BREAK' in paragraph.text:
             break
-    match = re.search(pattern, first_page)
-    if not match:
-        print("首页日期格式有误")
+    return first_page_text
+
 
 def check_directory_and_font(file_path):
     with open(file_path, 'rb') as file:  
@@ -230,8 +245,7 @@ def find_table_after_paragraph(doc, paragraph_text):
                     return last_cell.text.strip()
     return None
 
-# # 使用示例
-# csv_path = 'information.csv'  # 替换为你的CSV文件路径
+
 
 
 if __name__ == "__main__":
@@ -242,6 +256,10 @@ if __name__ == "__main__":
 
     # 封面日期年月应采用汉字符号书写
     check_date_format(doc)  
+
+    # # 使用示例
+    # csv_path = 'information.csv'  # 替换为你的CSV文件路径 
+
 
     # 设计文件分发表的邮箱、地址、手机号码等应准确，我方人员应为合同制员工
     paragraph_text = '设计文件分发表'  # 替换为段落中的目标文字
